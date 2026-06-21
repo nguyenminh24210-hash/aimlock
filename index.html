@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMinh PRX - Head Lock (Sửa Lỗi)</title>
+    <style>
+        /* --- 1. CÀI ĐẶT CHUNG (GIAO DIỆN DARK/CYAN) --- */
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { 
+            margin: 0; padding: 0; 
+            background-color: #0f0f0f; /* Nền xám đen tối ưu mắt */
+            color: #ffffff; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; overflow: hidden;
+            position: relative; /* Cho hiệu ứng tuyết rơi */
+        }
+
+        /* --- Hiệu ứng xuất hiện mượt mà --- */
+        .page { 
+            display: none; 
+            text-align: center; 
+            animation: fadeIn 0.6s ease-in-out;
+            background: #151515;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            width: 320px;
+            position: relative; /* Giữ UI lên trên lớp tuyết */
+            z-index: 10;
+        }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        h2 { color: #00ffff; text-transform: uppercase; letter-spacing: 2px; font-size: 20px; margin-bottom: 25px; }
+
+        /* --- 2. NÚT BẤM (BUTTONS) --- */
+        .btn-cyan {
+            background-color: transparent;
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            width: 100%;
+        }
+        .btn-cyan:hover {
+            background-color: #00ffff;
+            color: #000000;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        /* Hiệu ứng nhấp nháy cho chữ "Bấm vào để kích hoạt" */
+        .blink-text { animation: blinker 1.5s linear infinite; margin-top: 10px; font-size: 12px; color: #aaaaaa; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        /* --- 3. Ô NHẬP KEY (INPUT FIELD - ĐÃ SỬA LỖI) --- */
+        .input-key {
+            width: 100%; padding: 12px; margin-bottom: 20px;
+            background: #1a1a1a; color: #00ffff;
+            border: 2px solid #00ffff; /* Sửa lỗi viền Cyan nổi bật hơn */
+            border-radius: 8px;
+            text-align: center; font-size: 16px; outline: none;
+            transition: 0.3s;
+            display: block !important; /* Đảm bảo nó luôn hiển thị */
+        }
+        .input-key:focus { border-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+
+        /* --- 4. BẢNG ĐIỀU KHIỂN (DASHBOARD TOGGLES) --- */
+        .setting-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1a1a1a; padding: 12px 15px;
+            border-radius: 8px; margin-bottom: 15px; border: 1px solid #333;
+        }
+        .setting-name { font-weight: bold; font-size: 14px; }
+
+        /* Nút công tắc (Toggle Switch) */
+        .toggle-switch {
+            width: 44px; height: 22px;
+            background-color: #333; border-radius: 11px;
+            position: relative; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-switch.on { background-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+        
+        .toggle-circle {
+            width: 18px; height: 18px;
+            background-color: #ffffff; border-radius: 50%;
+            position: absolute; top: 2px; left: 2px;
+            transition: 0.3s;
+        }
+        .toggle-switch.on .toggle-circle { left: 24px; background-color: #000000; }
+
+        /* --- 5. HIỆU ỨNG TUYẾT RƠI (SNOWFALL) --- */
+        #snowflakeContainer {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; /* Không che mất các nút */
+            overflow: hidden; z-index: 1;
+        }
+        .snowflake {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.6); /* Tuyết mờ nhẹ */
+            border-radius: 50%;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            from { transform: translateY(-10px); }
+            to { transform: translateY(100vh); }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div id="snowflakeContainer"></div>
+
+    <div id="page1" class="page active">
+        <h2>App by NMinh PRX</h2>
+        <button class="btn-cyan" onclick="goToPage('page2')">Bấm vào để kích hoạt</button>
+        <div class="blink-text">Hệ thống đang chờ lệnh...</div>
+    </div>
+
+    <div id="page2" class="page">
+        <h2>Nhập Key App<br>Head Lock</h2>
+        <input type="text" id="keyInput" class="input-key" placeholder="NHẬP KEY TẠI ĐÂY...">
+        <button class="btn-cyan" onclick="checkKey()">Xác Nhận</button>
+        <div id="errorMsg" style="color: #ff4444; font-size: 12px; margin-top: 10px; display: none;">Key không hợp lệ. Vui lòng thử lại!</div>
+    </div>
+
+    <div id="page3" class="page">
+        <h2>Bảng Điều Khiển</h2>
+
+        <div class="setting-row">
+            <span class="setting-name">Nhẹ Tâm</span>
+            <div class="toggle-switch" onclick="toggleFeature(this)">
+                <div class="toggle-circle"></div>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <span class="setting-name">Giảm FPS</span>
+            <div class="toggle-switch" onclick="toggleFeature(this)">
+                <div class="toggle-circle"></div>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <span class="setting-name">Tối Ưu Máy</span>
+            <div class="toggle-switch" onclick="toggleFeature(this)">
+                <div class="toggle-circle"></div>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <span class="setting-name">Tăng Nhạy</span>
+            <div class="toggle-switch" onclick="toggleFeature(this)">
+                <div class="toggle-circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mật khẩu đúng (Vẫn là nminhVIP như cũ)
+        const CORRECT_KEY = "nminhVIP";
+
+        // Hàm chuyển trang
+        function goToPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Hàm kiểm tra Key (Sửa ID)
+        function checkKey() {
+            let userKey = document.getElementById('keyInput').value;
+            let errorMsg = document.getElementById('errorMsg');
+
+            if (userKey === CORRECT_KEY) {
+                errorMsg.style.display = "none";
+                goToPage('page3');
+            } else {
+                errorMsg.style.display = "block";
+            }
+        }
+
+        // Bật sự kiện nhấn Enter
+        document.getElementById('keyInput').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                checkKey();
+            }
+        });
+
+        function toggleFeature(element) {
+            element.classList.toggle("on");
+        }
+
+        // --- HỆ THỐNG TUYẾT RƠI (JS) ---
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            
+            // Random kích thước (2px đến 6px)
+            const size = Math.random() * 4 + 2;
+            snowflake.style.width = `${size}px`;
+            snowflake.style.height = `${size}px`;
+            
+            // Random vị trí bắt đầu theo chiều ngang
+            snowflake.style.left = `${Math.random() * 100}vw`;
+            
+            // Random tốc độ rơi (3s đến 10s)
+            snowflake.style.animationDuration = `${Math.random() * 7 + 3}s`;
+            
+            document.getElementById('snowflakeContainer').appendChild(snowflake);
+            
+            // Tự xóa tuyết sau khi rơi xong để không làm lag DOM
+            setTimeout(() => {
+                snowflake.remove();
+            }, (Math.random() * 7 + 3) * 1000); 
+        }
+
+        // Tạo tuyết liên tục sau mỗi 100ms (Số lượng vừa phải)
+        setInterval(createSnowflake, 100);
+
+    </script>
+</body>
+</html>
